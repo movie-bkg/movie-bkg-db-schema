@@ -14,7 +14,7 @@ CREATE SCHEMA mv_bkg_notification;
 
 DROP TABLE IF EXISTS mv_bkg_usr.T_User;
 DROP TABLE IF EXISTS mv_bkg_usr.T_User_Pref;
-DROP TABLE IF EXISTS mv_bkg_usr.T_Paymt_Mthd;
+DROP TABLE IF EXISTS mv_bkg_usr.T_Card_Details;
 
 DROP TABLE IF EXISTS mv_bkg_movie.T_Movie;
 DROP TABLE IF EXISTS mv_bkg_movie.T_Movie_Review;
@@ -34,7 +34,7 @@ CREATE TABLE mv_bkg_usr.T_User (
 	A_Usr_Id VARCHAR(37) NOT NULL,
 	A_Usr_Nm VARCHAR(20) NOT NULL,
 	A_Email VARCHAR(255) NOT NULL,
-	A_Pswd VARCHAR(20) NOT NULL,
+	A_Pswd VARCHAR(100) NOT NULL,
 	A_Fst_Nm VARCHAR(255) NOT NULL,
 	A_Last_Nm VARCHAR(255) NULL,
 	A_Phn VARCHAR(20) NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE mv_bkg_usr.T_User_Pref (
 	CONSTRAINT FKUsrPref FOREIGN KEY (A_Usr_Id) REFERENCES mv_bkg_usr.T_User(A_Usr_Id)
 );
 
-CREATE TABLE mv_bkg_usr.T_Paymt_Mthd (
-	A_Paymt_Mthd_Id VARCHAR(37) NOT NULL,
+CREATE TABLE mv_bkg_usr.T_Card_Details (
+	A_Card_Details_Id VARCHAR(37) NOT NULL,
 	A_Usr_Id VARCHAR(37) NOT NULL,
 	A_Crd_No VARCHAR(255) NOT NULL,
 	A_Crd_Type VARCHAR(50) NOT NULL,
@@ -82,11 +82,11 @@ CREATE TABLE mv_bkg_usr.T_Paymt_Mthd (
 	A_Bill_Addrs VARCHAR(255) NULL,
 	A_Cr_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
 	A_Upd_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
-	CONSTRAINT PKPaymtMthd PRIMARY KEY (A_Paymt_Mthd_Id),
-	CONSTRAINT FKPaymtMthd FOREIGN KEY (A_Usr_Id) REFERENCES mv_bkg_usr.T_User(A_Usr_Id)
+	CONSTRAINT PKCardDetails PRIMARY KEY (A_Card_Details_Id),
+	CONSTRAINT FKCardDetails FOREIGN KEY (A_Usr_Id) REFERENCES mv_bkg_usr.T_User(A_Usr_Id)
 );
 
-CREATE INDEX IDX_PaymtMthd_User_Id ON mv_bkg_usr.T_Paymt_Mthd
+CREATE INDEX IDX_CardDetails_User_Id ON mv_bkg_usr.T_Card_Details
 (
 	A_Usr_Id
 );
@@ -242,12 +242,13 @@ CREATE TABLE mv_bkg_paymt.T_Paymt (
 	A_Bkg_Id VARCHAR(37) NOT NULL,
 	A_Amt DECIMAL(10, 2) NOT NULL,
 	A_St VARCHAR(10) NOT NULL,
-	A_Paymt_Mthd_Id VARCHAR(37) NOT NULL,
+	A_Paymt_Mthod VARCHAR(10) NOT NULL,
+	A_Card_Details_Id VARCHAR(37) NULL,
 	A_Show_Dtm TIMESTAMP NOT NULL DEFAULT timezone('UTC', now()),
 	A_Trnsctn_Dtm TIMESTAMP NOT NULL DEFAULT timezone('UTC', now()),
 	CONSTRAINT PKPaymt PRIMARY KEY (A_Paymt_Id),
 	CONSTRAINT FKPaymtBkg FOREIGN KEY (A_Bkg_Id) REFERENCES mv_bkg_booking.T_Bkg(A_Bkg_Id),
-	CONSTRAINT FKPaymtMthd FOREIGN KEY (A_Paymt_Mthd_Id) REFERENCES mv_bkg_usr.T_Paymt_Mthd(A_Paymt_Mthd_Id)
+	CONSTRAINT FKCardDetails FOREIGN KEY (A_Card_Details_Id) REFERENCES mv_bkg_usr.T_Card_Details(A_Card_Details_Id)
 );
 
 CREATE INDEX IDX_Paymt ON mv_bkg_paymt.T_Paymt

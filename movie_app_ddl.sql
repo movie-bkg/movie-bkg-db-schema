@@ -1,13 +1,11 @@
 DROP SCHEMA IF EXISTS mv_bkg_usr CASCADE;
 DROP SCHEMA IF EXISTS mv_bkg_movie CASCADE;
-DROP SCHEMA IF EXISTS mv_bkg_showtime CASCADE;
 DROP SCHEMA IF EXISTS mv_bkg_booking CASCADE;
 DROP SCHEMA IF EXISTS mv_bkg_paymt CASCADE;
 DROP SCHEMA IF EXISTS mv_bkg_notification CASCADE;
 
 CREATE SCHEMA mv_bkg_usr;
 CREATE SCHEMA mv_bkg_movie;
-CREATE SCHEMA mv_bkg_showtime;
 CREATE SCHEMA mv_bkg_booking;
 CREATE SCHEMA mv_bkg_paymt;
 CREATE SCHEMA mv_bkg_notification;
@@ -18,10 +16,9 @@ DROP TABLE IF EXISTS mv_bkg_usr.T_Card_Details;
 
 DROP TABLE IF EXISTS mv_bkg_movie.T_Movie;
 DROP TABLE IF EXISTS mv_bkg_movie.T_Movie_Review;
-
-DROP TABLE IF EXISTS mv_bkg_showtime.T_Theater;
-DROP TABLE IF EXISTS mv_bkg_showtime.T_Screen;
-DROP TABLE IF EXISTS mv_bkg_showtime.T_Showtime;
+DROP TABLE IF EXISTS mv_bkg_movie.T_Theater;
+DROP TABLE IF EXISTS mv_bkg_movie.T_Screen;
+DROP TABLE IF EXISTS mv_bkg_movie.T_Showtime;
 
 DROP TABLE IF EXISTS mv_bkg_booking.T_Bkg;
 DROP TABLE IF EXISTS mv_bkg_booking.T_Bkg_Details;
@@ -91,30 +88,38 @@ CREATE INDEX IDX_CardDetails_User_Id ON mv_bkg_usr.T_Card_Details
 	A_Usr_Id
 );
 
+CREATE TABLE mv_bkg_movie.T_Genre (
+	A_Genre_Id INTEGER NOT NULL,
+	A_Name VARCHAR(50) NOT NULL,
+	CONSTRAINT PKGenre PRIMARY KEY (A_Genre_Id)
+);
+
+CREATE INDEX IDX_Genre ON mv_bkg_movie.T_Genre
+(
+	A_Genre_Id
+);
+
 CREATE TABLE mv_bkg_movie.T_Movie (
 	A_Movie_Id VARCHAR(37) NOT NULL,
+	A_Id BIGINT NOT NULL,
 	A_Title VARCHAR(255) NOT NULL,
-	A_Desc VARCHAR(255) NULL,
-	A_Director VARCHAR(50) NULL,
-	A_Producer VARCHAR(50) NULL,
+	A_Org_Title VARCHAR(255) NOT NULL,
+	A_Desc VARCHAR(600) NULL,
+	A_Poster_Path VARCHAR(255) NULL,
+	A_Backdrop_Path VARCHAR(255) NULL,
 	A_Release_Dt DATE NULL,
-	A_Lang VARCHAR(50) NULL,
+	A_Org_Lang VARCHAR(50) NULL,
 	A_Duratn INTEGER NULL,
-	A_Ratng NUMERIC(3, 1),
-	A_Genre VARCHAR(255) NULL,
+	A_Ratng NUMERIC(3, 1) NULL,
+	A_Genre_Ids VARCHAR(255) NULL,
+	A_Is_Adult VARCHAR(1) NOT NULL,
 	A_Cr_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
-	A_Upd_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
 	CONSTRAINT PKMovie PRIMARY KEY (A_Movie_Id)
 );
 
 CREATE INDEX IDX_Movie_Titile ON mv_bkg_movie.T_Movie
 (
 	A_Title
-);
-
-CREATE INDEX IDX_Movie_Genre ON mv_bkg_movie.T_Movie
-(
-	A_Genre
 );
 
 CREATE TABLE mv_bkg_movie.T_Movie_Review (
@@ -139,19 +144,19 @@ CREATE INDEX IDX_Movie_Details_Movie_Id ON mv_bkg_movie.T_Movie_Review
 	A_Movie_Id
 );
 
-CREATE TABLE mv_bkg_showtime.T_Theater (
+CREATE TABLE mv_bkg_movie.T_Theater (
 	A_Theater_Id VARCHAR(37) NOT NULL,
 	A_Nm VARCHAR(255) NOT NULL,
-	A_Locatn VARCHAR(150) NULL,
+	A_Addrss VARCHAR(150) NULL,
 	A_Gpos_Lat NUMERIC(10, 7) NOT NULL,
-	A_Gos_Long NUMERIC(10, 7) NOT NULL,
+	A_Gpos_Long NUMERIC(10, 7) NOT NULL,
 	A_Tot_Scrns INTEGER NULL,
 	A_Cr_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
 	A_Upd_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
 	CONSTRAINT PKTheater PRIMARY KEY (A_Theater_Id)
 );
 
-CREATE TABLE mv_bkg_showtime.T_Screen (
+CREATE TABLE mv_bkg_movie.T_Screen (
 	A_Screen_Id VARCHAR(37) NOT NULL,
 	A_Theater_Id VARCHAR(37) NOT NULL,
 	A_Scrn_No INTEGER NULL,
@@ -159,33 +164,32 @@ CREATE TABLE mv_bkg_showtime.T_Screen (
 	A_Cr_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
 	A_Upd_Dtm TIMESTAMP NULL DEFAULT timezone('UTC', now()),
 	CONSTRAINT PKScreen PRIMARY KEY (A_Screen_Id),
-	CONSTRAINT FKScreen FOREIGN KEY (A_Theater_Id) REFERENCES mv_bkg_showtime.T_Theater(A_Theater_Id)
+	CONSTRAINT FKScreen FOREIGN KEY (A_Theater_Id) REFERENCES mv_bkg_movie.T_Theater(A_Theater_Id)
 );
 
-CREATE INDEX IDX_Screen_Theater ON mv_bkg_showtime.T_Screen
+CREATE INDEX IDX_Screen_Theater ON mv_bkg_movie.T_Screen
 (
 	A_Theater_Id
 );
 
-CREATE TABLE mv_bkg_showtime.T_Showtime (
+CREATE TABLE mv_bkg_movie.T_Showtime (
 	A_Showtime_Id VARCHAR(37) NOT NULL,
 	A_Movie_Id VARCHAR(37) NOT NULL,
 	A_Screen_Id VARCHAR(37) NOT NULL,
-	A_Scrn_No INTEGER NOT NULL,
 	A_Strt_Dtm TIMESTAMP NOT NULL DEFAULT timezone('UTC', now()),
 	A_End_Dtm TIMESTAMP NOT NULL DEFAULT timezone('UTC', now()),
 	A_Avl_Seats INTEGER NOT NULL,
 	CONSTRAINT PKShowtime PRIMARY KEY (A_Showtime_Id),
 	CONSTRAINT FKShowtimeMov FOREIGN KEY (A_Movie_Id) REFERENCES mv_bkg_movie.T_Movie(A_Movie_Id),
-	CONSTRAINT FKShowtimeScrn FOREIGN KEY (A_Screen_Id) REFERENCES mv_bkg_showtime.T_Screen(A_Screen_Id)
+	CONSTRAINT FKShowtimeScrn FOREIGN KEY (A_Screen_Id) REFERENCES mv_bkg_movie.T_Screen(A_Screen_Id)
 );
 
-CREATE INDEX IDX_Showtime_Movie_Start ON mv_bkg_showtime.T_Showtime
+CREATE INDEX IDX_Showtime_Movie_Start ON mv_bkg_movie.T_Showtime
 (
 	A_Movie_Id, A_Strt_Dtm
 );
 
-CREATE INDEX IDX_Showtime_Sceen ON mv_bkg_showtime.T_Showtime
+CREATE INDEX IDX_Showtime_Sceen ON mv_bkg_movie.T_Showtime
 (
 	A_Screen_Id
 );
